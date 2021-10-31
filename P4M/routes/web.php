@@ -18,35 +18,42 @@ use App\Http\Controllers\AdminController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+	return view('welcome');
 });
 
 Route::prefix("page")->group(function() {
 
 	Route::prefix("admin")->group(function() {
 
-		Route::get("/", [AppController::class, "dashboard"]);
-		Route::get("/layouts", [AppController::class, "layouts"]);
-		Route::get("/dashboard", [AppController::class, "dashboard"]);
-
-		Route::get("/login", [LoginAdminController::class, "login"]);
-
-		// Data Users
-		Route::prefix("users")->group(function() {
-			Route::get("/", [AdminController::class, "index"]);
-			Route::post("/tambah", [AdminController::class, "tambah"]);
-			Route::get("/{id_role}/edit", [AdminController::class, "edit"]);
-			Route::post("/simpan", [AdminController::class, "simpan"]);
-			Route::post("/hapus", [AdminController::class, "hapus"]);
+		Route::group(["middleware" => "guest"], function() {
+			Route::get("/login", [LoginAdminController::class, "login"]);
+			Route::post("/post_login", [LoginAdminController::class, "post_login"]);
 		});
 
-		// Data Role
-		Route::prefix("role")->group(function() {
-			Route::get("/", [RoleController::class, "index"]);
-			Route::post("/tambah", [RoleController::class, "tambah"]);
-			Route::get("/{id_role}/edit", [RoleController::class, "edit"]);
-			Route::post("/simpan", [RoleController::class, "simpan"]);
-			Route::post("/hapus", [RoleController::class, "hapus"]);
+		Route::group(["middleware" => "is_admin"], function() {
+			Route::get("/", [AppController::class, "dashboard"]);
+			Route::get("/layouts", [AppController::class, "layouts"]);
+			Route::get("/dashboard", [AppController::class, "dashboard"]);
+
+			// Data Users
+			Route::prefix("users")->group(function() {
+				Route::get("/", [AdminController::class, "index"]);
+				Route::post("/tambah", [AdminController::class, "tambah"]);
+				Route::get("/{id_role}/edit", [AdminController::class, "edit"]);
+				Route::post("/simpan", [AdminController::class, "simpan"]);
+				Route::post("/hapus", [AdminController::class, "hapus"]);
+			});
+
+			// Data Role
+			Route::prefix("role")->group(function() {
+				Route::get("/", [RoleController::class, "index"]);
+				Route::post("/tambah", [RoleController::class, "tambah"]);
+				Route::get("/{id_role}/edit", [RoleController::class, "edit"]);
+				Route::post("/simpan", [RoleController::class, "simpan"]);
+				Route::post("/hapus", [RoleController::class, "hapus"]);
+			});
+
+			Route::get("/logout", [LoginAdminController::class, "logout"]);
 		});
 
 	});
